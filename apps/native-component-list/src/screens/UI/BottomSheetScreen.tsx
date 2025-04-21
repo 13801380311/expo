@@ -2,20 +2,33 @@ import { BottomSheet } from '@expo/ui/BottomSheet';
 import { Button } from '@expo/ui/Button';
 import * as React from 'react';
 import { ScrollView, Text } from 'react-native';
-import Animated, { LinearTransition } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+
 export default function SectionScreen() {
   const [isOpened, setIsOpened] = React.useState<boolean>(true);
-  const [height, setHeight] = React.useState<number>(100);
+  const height = useSharedValue(100);
+
+  const handleIncreaseHeight = () => {
+    height.value = height.value > 500 ? 100 : height.value + 100;
+  };
+
+  const animatedStyles = useAnimatedStyle(() => ({
+    height: withTiming(height.value, { duration: 300 }),
+  }));
 
   return (
-    <ScrollView>
+    <ScrollView
+      contentContainerStyle={{
+        flex: 1,
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+        padding: 8,
+      }}>
       <Button onPress={() => setIsOpened((h) => !h)}>Toggle</Button>
       <Text>isOpened: {isOpened ? 'yes' : 'no'}</Text>
       <BottomSheet isOpened={isOpened} onIsOpenedChange={(e) => setIsOpened(e)}>
-        <Animated.View layout={LinearTransition.duration(300)} style={{ height, padding: 20 }}>
-          <Button onPress={() => setHeight((h) => (h > 500 ? 100 : h + 100))}>
-            Increase height
-          </Button>
+        <Animated.View style={[{ padding: 20 }, animatedStyles]}>
+          <Button onPress={handleIncreaseHeight}>Increase height</Button>
         </Animated.View>
       </BottomSheet>
     </ScrollView>
